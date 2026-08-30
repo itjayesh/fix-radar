@@ -38,10 +38,10 @@ agent loads for the actual investigate → reproduce → fix → verify → ask
 loop. See that file for the exact steps and guardrails (smallest possible
 fix, never merge automatically, say so if it's a false positive).
 
-`../fix-radar-demo-target/` is the demo repository this agent runs against:
-a tiny Flask API with two real, intentionally-left-in bugs (a SQL injection
-and an unguarded division by zero) for Qodo to flag and the agent to fix on
-camera.
+[`fix-radar-demo-target`](https://github.com/itjayesh/fix-radar-demo-target)
+is the demo repository this agent runs against: a tiny Flask API with two
+real, intentionally-left-in bugs (a SQL injection and an unguarded division
+by zero) for Qodo to flag and the agent to fix on camera.
 
 ## Setup checklist
 
