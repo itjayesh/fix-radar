@@ -9,6 +9,10 @@ smallest correct fix, verifies it, and opens a PR for a human to approve
 before anything merges. Qodo finds problems; the agent proves and fixes
 them; a human stays the one who says yes.
 
+**Live dashboard:** https://itjayesh.github.io/fix-radar/
+**Blog post:** [BLOG.md](BLOG.md)
+**The real run:** [Qodo's finding (PR #1)](https://github.com/itjayesh/fix-radar-demo-target/pull/1) → [the agent's fix (PR #2)](https://github.com/itjayesh/fix-radar-demo-target/pull/2)
+
 This targets both prize tracks with one loop instead of two projects:
 TrueForge provides the parts that make "reproduce → fix → verify → ask" a
 real workflow (MCP tools, a sandbox, an approval gate) rather than a chat
@@ -43,36 +47,28 @@ is the demo repository this agent runs against: a tiny Flask API with two
 real, intentionally-left-in bugs (a SQL injection and an unguarded division
 by zero) for Qodo to flag and the agent to fix on camera.
 
-## Setup checklist
+## Setup (completed)
 
-Steps that need your own accounts/keys (can't be scripted):
-
-- [ ] `npx @truefoundry/trueforge` → http://localhost:8790 (Node 22+
-      confirmed installed)
-- [ ] Settings → Models: add a provider + API key
-- [ ] Settings → Connectors: add the GitHub MCP connector, scoped to the
-      `fix-radar-demo-target` repo
-- [ ] Settings → Skills: import this repo (or just `skills/qodo-fix/`) as a
-      skill
-- [ ] Settings → Sandbox providers: add a Daytona API key
-- [ ] app.qodo.ai/signin → connect GitHub → install the Qodo app on
+- [x] `npx @truefoundry/trueforge` → http://localhost:8790 — hit a
+      Windows-only ESM crash ([upstream issue](https://github.com/truefoundry/trueforge/issues/427)),
+      run inside WSL instead (see [BLOG.md](BLOG.md) for the detour)
+- [x] Settings → Models: added a provider + API key
+- [x] Settings → Connectors: added the GitHub MCP connector, scoped to
       `fix-radar-demo-target`
-- [ ] Push `fix-radar-demo-target` to GitHub and open a PR against it (or
-      just push to `main` — Qodo can review either) so Qodo has something to
-      flag
-- [ ] In TrueForge chat: enable the GitHub connector + sandbox + the
-      `qodo-fix` skill, confirm it can read the Qodo finding, then **Save
-      Agent**
+- [x] Settings → Skills: imported this repo's `skills/qodo-fix/` as a skill
+- [x] Settings → Sandbox providers: added a Daytona API key
+- [x] app.qodo.ai/signin → connected GitHub → installed the Qodo app on
+      `fix-radar-demo-target`
+- [x] Opened a PR on `fix-radar-demo-target`, commented `/agentic_review`
+      to trigger Qodo
+- [x] In TrueForge chat: enabled the GitHub connector + sandbox + the
+      `qodo-fix` skill, handed it the real Qodo finding, approved the fix,
+      **saved the agent**
 
-## Demo script (for the submission video / blog post)
-
-1. Show the two real bugs in `fix-radar-demo-target/app.py`.
-2. Open a PR — Qodo flags the SQL injection and/or the ZeroDivisionError.
-3. Fix Radar picks up the finding, reproduces it in the sandbox (show the
-   failing test), fixes it, re-runs tests (show them passing).
-4. Agent asks for approval before opening the fix PR — approve on camera.
-5. Show the resulting PR: description, diff, before/after test output,
-   link back to the Qodo finding.
+`fix-radar-demo-target/app.py` also still has two bugs left in on purpose
+(a SQL injection and an unguarded division by zero) that Qodo hasn't been
+asked to review yet — untouched, available for anyone who wants to run the
+loop again on a fresh finding.
 
 ## What actually happened (this run)
 
