@@ -1,379 +1,264 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Fix Radar</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          surface: "#0F1210",
+          "surface-raised": "#171B18",
+          "surface-hi": "#1F2521",
+          outline: "#2B332D",
+          "outline-strong": "#3D473F",
+          ink: "#E9EDE9",
+          "ink-dim": "#9AA79F",
+          "ink-faint": "#5C6862",
+          good: "#4EDEA3",
+          "good-dim": "#0F2A1E",
+          amber: "#FFB596",
+          "amber-dim": "#3A2415",
+          bad: "#FF8A7A",
+          "bad-dim": "#3A1712",
+        },
+        fontFamily: {
+          sans: ["IBM Plex Sans", "sans-serif"],
+          mono: ["JetBrains Mono", "monospace"],
+        },
+      },
+    },
+  };
+</script>
 <style>
-  :root{
-    /* dark-first: this is the default palette */
-    --bg:#0B0E0D;
-    --bg-raised:#141917;
-    --bg-chrome:#1B2320;
-    --ink:#ECEFEC;
-    --ink-dim:#9BA6A0;
-    --ink-faint:#5E6A64;
-    --line:#242C28;
-    --line-strong:#37423C;
-    --accent:#FF8A3D;
-    --accent-dim:#3A2414;
-    --accent-ink:#1A0E04;
-    --good:#3ED598;
-    --good-dim:#0E2A1F;
-    --bad:#FF6B60;
-    --bad-dim:#341512;
-    --focus:#6BB2E0;
-    --shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 20px 40px -20px rgba(0,0,0,0.6);
+  body { background-color: #0F1210; }
+  .glass { background: rgba(23,27,24,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  @keyframes radar-sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes flow-dash { to { stroke-dashoffset: -20; } }
+  @keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 0 rgba(255,181,150,0.35); } 50% { box-shadow: 0 0 0 6px rgba(255,181,150,0); } }
+  .radar-bg::before {
+    content: '';
+    position: fixed; top: 50%; left: 50%;
+    width: 220vmax; height: 220vmax;
+    background: conic-gradient(from 0deg at 50% 50%, transparent 0%, rgba(78,222,163,0.05) 8%, transparent 16%);
+    animation: radar-sweep 14s linear infinite;
+    transform: translate(-50%,-50%);
+    pointer-events: none; z-index: 0;
   }
-  @media (prefers-color-scheme: light){
-    :root:not([data-theme="dark"]){
-      --bg:#F1F4F1;
-      --bg-raised:#FFFFFF;
-      --bg-chrome:#E7ECE8;
-      --ink:#152019;
-      --ink-dim:#4E5A54;
-      --ink-faint:#7C8B85;
-      --line:#DAE2DC;
-      --line-strong:#C3CEC7;
-      --accent:#C1651E;
-      --accent-dim:#F5E0C9;
-      --accent-ink:#3A2410;
-      --good:#217A57;
-      --good-dim:#DCEEE4;
-      --bad:#B8382F;
-      --bad-dim:#F6DEDB;
-      --focus:#2E6B8B;
-      --shadow: 0 1px 2px rgba(20,33,29,0.06), 0 20px 40px -20px rgba(20,33,29,0.18);
-    }
+  @media (prefers-reduced-motion: reduce) {
+    .radar-bg::before { animation: none; }
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
   }
-  :root[data-theme="light"]{
-    --bg:#F1F4F1;
-    --bg-raised:#FFFFFF;
-    --bg-chrome:#E7ECE8;
-    --ink:#152019;
-    --ink-dim:#4E5A54;
-    --ink-faint:#7C8B85;
-    --line:#DAE2DC;
-    --line-strong:#C3CEC7;
-    --accent:#C1651E;
-    --accent-dim:#F5E0C9;
-    --accent-ink:#3A2410;
-    --good:#217A57;
-    --good-dim:#DCEEE4;
-    --bad:#B8382F;
-    --bad-dim:#F6DEDB;
-    --focus:#2E6B8B;
-    --shadow: 0 1px 2px rgba(20,33,29,0.06), 0 20px 40px -20px rgba(20,33,29,0.18);
-  }
-
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; }
-  body{
-    background:
-      radial-gradient(1200px 480px at 50% -120px, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
-      var(--bg);
-    color:var(--ink);
-    font-family:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
-    line-height:1.55;
-  }
-  ::selection{ background:var(--accent-dim); color:var(--ink); }
-  a{ color:var(--focus); }
-  a:focus-visible, button:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
-  .mono{ font-family:"JetBrains Mono",ui-monospace,Menlo,monospace; }
-
-  .wrap{ max-width:800px; margin:0 auto; padding:64px 20px 100px; }
-
-  /* ---------- window chrome ---------- */
-  .win{
-    background:var(--bg-raised);
-    border:1px solid var(--line);
-    border-radius:12px;
-    box-shadow:var(--shadow);
-    overflow:hidden;
-    margin-bottom:28px;
-  }
-  .win-bar{
-    display:flex; align-items:center; gap:8px;
-    padding:10px 14px;
-    background:var(--bg-chrome);
-    border-bottom:1px solid var(--line);
-  }
-  .dots{ display:flex; gap:6px; flex:0 0 auto; }
-  .dots span{ width:10px; height:10px; border-radius:50%; background:var(--line-strong); }
-  .win-title{
-    font-family:"JetBrains Mono",monospace;
-    font-size:12px;
-    color:var(--ink-faint);
-    flex:1;
-    text-align:center;
-    letter-spacing:.02em;
-  }
-  .win-body{ padding:26px 28px; }
-  @media (max-width:600px){ .win-body{ padding:20px 18px; } }
-
-  /* ---------- hero ---------- */
-  .hero-body{ padding:34px 30px 30px; }
-  .prompt-line{
-    font-family:"JetBrains Mono",monospace;
-    font-size:13px;
-    color:var(--ink-faint);
-    margin-bottom:18px;
-  }
-  .prompt-line .user{ color:var(--good); }
-  .prompt-line .path{ color:var(--focus); }
-  .prompt-line .cursor{
-    display:inline-block; width:7px; height:14px; background:var(--accent);
-    margin-left:4px; vertical-align:-2px;
-    animation:blink 1.1s steps(1) infinite;
-  }
-  @media (prefers-reduced-motion: reduce){ .prompt-line .cursor{ animation:none; } }
-  @keyframes blink{ 50%{ opacity:0; } }
-
-  h1{
-    font-size:clamp(38px,6.4vw,58px);
-    font-weight:700;
-    letter-spacing:-0.03em;
-    line-height:1.02;
-    margin:0 0 16px;
-    text-wrap:balance;
-  }
-  h1 .dot{ color:var(--accent); }
-  .tagline{
-    font-size:17.5px;
-    color:var(--ink-dim);
-    max-width:58ch;
-    margin:0 0 24px;
-  }
-  .pills{ display:flex; flex-wrap:wrap; gap:8px; }
-  .pill{
-    font-family:"JetBrains Mono",monospace;
-    font-size:12px;
-    padding:5px 11px;
-    border-radius:999px;
-    border:1px solid var(--line-strong);
-    color:var(--ink-dim);
-    display:inline-flex; align-items:center; gap:6px;
-    background:var(--bg-chrome);
-  }
-  .pill.state-good{ color:var(--good); border-color:color-mix(in srgb, var(--good) 55%, var(--line-strong)); background:var(--good-dim); }
-  .pill.state-flag{ color:var(--accent); border-color:color-mix(in srgb, var(--accent) 55%, var(--line-strong)); background:var(--accent-dim); }
-  .pill a{ color:inherit; text-decoration:none; }
-  .pill a:hover{ text-decoration:underline; }
-  .pulse{ width:6px; height:6px; border-radius:50%; background:var(--good); box-shadow:0 0 0 3px var(--good-dim); }
-
-  h2.win-title-label{ display:none; }
-
-  /* ---------- loop diagram ---------- */
-  .loop{ display:flex; align-items:stretch; gap:0; overflow-x:auto; padding-bottom:2px; }
-  .node{
-    flex:1 1 0; min-width:112px;
-    background:var(--bg-chrome);
-    border:1px solid var(--line);
-    border-radius:9px;
-    padding:14px 10px;
-    text-align:center;
-  }
-  .node .n{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--ink-faint); display:block; margin-bottom:6px; }
-  .node .t{ font-weight:600; font-size:13px; line-height:1.3; }
-  .node.hold{ border-color:var(--accent); background:var(--accent-dim); }
-  .node.hold .t{ color:var(--accent); }
-  .arrow{ flex:0 0 26px; display:flex; align-items:center; justify-content:center; color:var(--ink-faint); font-size:16px; }
-  @media (max-width:560px){ .loop{ flex-direction:column; } .arrow{ transform:rotate(90deg); } }
-
-  /* ---------- trace ---------- */
-  .trace{ list-style:none; margin:0; padding:0; font-size:14px; }
-  .trace li{ display:grid; grid-template-columns:24px 1fr; gap:14px; padding:0 0 20px; position:relative; }
-  .trace li::before{ content:""; position:absolute; left:11px; top:22px; bottom:-2px; width:1px; background:var(--line); }
-  .trace li:last-child::before{ display:none; }
-  .idx{
-    width:24px; height:24px; border-radius:50%;
-    border:1px solid var(--line-strong); background:var(--bg-chrome);
-    display:flex; align-items:center; justify-content:center;
-    font-family:"JetBrains Mono",monospace; font-size:11.5px; color:var(--ink-dim);
-    z-index:1;
-  }
-  .trace li.milestone .idx{ background:var(--good); border-color:var(--good); color:#06140E; }
-  .trace li.blocker .idx{ background:var(--bad); border-color:var(--bad); color:#2A0906; }
-  .step-t{ font-weight:600; margin:1px 0 4px; font-size:14.5px; }
-  .step-d{ color:var(--ink-dim); }
-  .step-d code{ font-family:"JetBrains Mono",monospace; font-size:.9em; background:var(--bg-chrome); padding:1px 5px; border-radius:4px; border:1px solid var(--line); }
-
-  /* ---------- diff ---------- */
-  .diff{ font-family:"JetBrains Mono",monospace; font-size:12.5px; }
-  .diff pre{ margin:0; padding:8px 0; }
-  .diff .line{ padding:1px 20px; white-space:pre; }
-  .diff .add{ background:var(--good-dim); color:var(--good); }
-  .diff .ctx{ color:var(--ink-faint); }
-
-  /* ---------- stack ---------- */
-  .stack{ display:flex; flex-wrap:wrap; gap:8px; }
-  .chip{
-    font-family:"JetBrains Mono",monospace;
-    font-size:12.5px; padding:6px 11px; border-radius:7px;
-    background:var(--bg-chrome); border:1px solid var(--line); color:var(--ink);
-  }
-
-  /* ---------- links ---------- */
-  .links{ display:grid; gap:2px; }
-  .linkrow{
-    display:flex; align-items:baseline; gap:12px;
-    padding:11px 4px;
-    border-bottom:1px solid var(--line);
-    font-family:"JetBrains Mono",monospace;
-  }
-  .linkrow:last-child{ border-bottom:none; }
-  .linkrow .k{ font-size:11px; color:var(--ink-faint); min-width:60px; }
-  .linkrow a{ font-size:13px; text-decoration:none; word-break:break-all; }
-  .linkrow a:hover{ text-decoration:underline; }
-
-  footer{
-    text-align:center;
-    margin-top:36px;
-    font-size:12.5px;
-    color:var(--ink-faint);
-    font-family:"JetBrains Mono",monospace;
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0F1210; }
+  ::-webkit-scrollbar-thumb { background: #2B332D; border-radius: 4px; }
 </style>
 </head>
-<body>
-<div class="wrap">
+<body class="antialiased min-h-screen text-ink font-sans radar-bg relative">
 
-  <div class="win">
-    <div class="win-bar"><div class="dots"><span></span><span></span><span></span></div><div class="win-title">agent@fix-radar &mdash; -zsh</div></div>
-    <div class="win-body hero-body">
-      <div class="prompt-line"><span class="user">agent</span>@fix-radar <span class="path">~/hackathon</span> $ qodo review --pr 1 --watch<span class="cursor"></span></div>
-      <h1>Findings become fixes<span class="dot">.</span></h1>
-      <p class="tagline">Qodo flags a real issue on a pull request. A TrueForge agent reproduces it in a sandbox, writes the fix and a test, then stops and waits for a human before anything ships.</p>
-      <div class="pills">
-        <span class="pill state-good"><span class="pulse"></span> PR #2 open &mdash; fix verified</span>
-        <span class="pill">repo: fix-radar-demo-target</span>
-        <span class="pill">severity: medium</span>
-        <span class="pill state-flag">approval required</span>
+<nav class="relative z-10 border-b border-outline flex justify-between items-center px-6 h-14 glass">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-[20px] text-good">radar</span>
+    <span class="font-semibold text-[15px]">Fix Radar</span>
+    <div class="hidden md:flex items-center gap-5 ml-6 text-[13px]">
+      <a class="text-ink border-b-2 border-good pb-4 -mb-4" href="#overview">Overview</a>
+      <a class="text-ink-dim hover:text-ink transition-colors" href="#workflow">Workflow</a>
+      <a class="text-ink-dim hover:text-ink transition-colors" href="#diff">Diff</a>
+      <a class="text-ink-dim hover:text-ink transition-colors" href="#log">Log</a>
+    </div>
+  </div>
+  <a href="https://github.com/itjayesh/fix-radar-demo-target/pull/2" target="_blank" rel="noopener"
+     class="bg-ink text-surface px-3.5 py-1.5 rounded text-[13px] font-medium hover:bg-white transition-colors">
+    View fix PR &#8599;
+  </a>
+</nav>
+
+<div class="relative z-10 flex">
+  <aside class="hidden lg:flex flex-col w-60 shrink-0 border-r border-outline p-4 glass sticky top-14 h-[calc(100vh-56px)]">
+    <div class="mb-6">
+      <h3 class="text-[13px] font-semibold text-ink">fix-radar-demo-target</h3>
+      <p class="text-[12px] text-ink-dim mt-0.5">Flask + SQLite</p>
+    </div>
+    <nav class="flex-1 flex flex-col gap-1 text-[13px]">
+      <a href="#overview" class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-good-dim text-good">
+        <span class="material-symbols-outlined text-[18px]">dashboard</span> Overview
+      </a>
+      <a href="https://github.com/itjayesh/fix-radar-demo-target/pull/1" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-ink-dim hover:bg-surface-hi transition-colors">
+        <span class="material-symbols-outlined text-[18px]">flag</span> Qodo finding
+      </a>
+      <a href="https://github.com/itjayesh/fix-radar/blob/master/skills/qodo-fix/SKILL.md" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-ink-dim hover:bg-surface-hi transition-colors">
+        <span class="material-symbols-outlined text-[18px]">description</span> Agent skill
+      </a>
+      <a href="https://github.com/itjayesh/fix-radar/blob/master/BLOG.md" target="_blank" rel="noopener" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-ink-dim hover:bg-surface-hi transition-colors">
+        <span class="material-symbols-outlined text-[18px]">edit_note</span> Blog post
+      </a>
+    </nav>
+    <a href="https://github.com/itjayesh/fix-radar-demo-target" target="_blank" rel="noopener"
+       class="mt-auto w-full text-center bg-surface-hi hover:bg-outline-strong text-ink py-2 rounded-lg text-[13px] border border-outline transition-colors">
+      Run it again on the 2 remaining bugs &#8599;
+    </a>
+  </aside>
+
+  <main class="flex-1 p-6 lg:p-10 max-w-[1100px] mx-auto w-full">
+
+    <header id="overview" class="mb-10 scroll-mt-20">
+      <h1 class="text-[34px] md:text-[44px] font-semibold tracking-tight leading-[1.05]">Findings become fixes.</h1>
+      <p class="text-ink-dim mt-3 max-w-2xl text-[15px]">Qodo flags a real issue on a pull request. A TrueForge agent reproduces it in a sandbox, writes the fix and a test, then stops and waits for a human before anything ships.</p>
+      <div class="flex flex-wrap gap-2.5 mt-5 text-[11px] font-mono">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-good/40 bg-good-dim text-good">
+          <span class="w-1.5 h-1.5 rounded-full bg-good"></span> PR #2 &middot; approved &amp; open
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-outline bg-surface-raised text-ink-dim">
+          <span class="material-symbols-outlined text-[13px]">folder</span> fix-radar-demo-target
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-amber/40 bg-amber-dim text-amber">
+          <span class="material-symbols-outlined text-[13px]">priority_high</span> severity: medium
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-outline bg-surface-raised text-ink-dim">
+          <span class="material-symbols-outlined text-[13px]">smart_toy</span> TrueForge agent
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-outline bg-surface-raised text-ink-dim">
+          <span class="material-symbols-outlined text-[13px]">rate_review</span> reviewed by Qodo
+        </div>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 flex flex-col gap-6">
+
+        <section id="workflow" class="glass border border-outline rounded-xl p-5 scroll-mt-20">
+          <div class="flex justify-between items-center border-b border-outline pb-3 mb-5">
+            <h2 class="text-[14px] font-semibold">Execution trace</h2>
+            <span class="font-mono text-[11px] text-ink-faint">PR #1 &rarr; PR #2</span>
+          </div>
+          <ol class="relative pl-1">
+            <div class="absolute left-[15px] top-2 bottom-2 w-px bg-outline"></div>
+
+            <li class="relative pl-9 pb-6">
+              <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full bg-good-dim border border-good flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px] text-good">flag</span>
+              </span>
+              <h4 class="text-[13.5px] font-medium">Qodo flags <code class="font-mono text-[12px] bg-surface-hi px-1.5 py-0.5 rounded">app.py</code> lines 66&ndash;69</h4>
+              <p class="text-[13px] text-ink-dim mt-1">Triggered by commenting <code class="font-mono">/agentic_review</code>. Finding: &ldquo;Total loads every expense&rdquo; &mdash; the endpoint pulls every row into Python and sums there instead of letting SQLite aggregate.</p>
+            </li>
+
+            <li class="relative pl-9 pb-6">
+              <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full bg-good-dim border border-good flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px] text-good">travel_explore</span>
+              </span>
+              <h4 class="text-[13.5px] font-medium">Agent investigates via GitHub MCP</h4>
+              <p class="text-[13px] text-ink-dim mt-1"><code class="font-mono">pull_request_read</code>, <code class="font-mono">get_file_contents</code>, <code class="font-mono">list_commits</code> &mdash; confirms the defect itself instead of trusting the one-line description.</p>
+            </li>
+
+            <li class="relative pl-9 pb-6">
+              <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full bg-good-dim border border-good flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px] text-good">deployed_code</span>
+              </span>
+              <h4 class="text-[13.5px] font-medium">Reproduces and fixes in a Daytona sandbox</h4>
+              <p class="text-[13px] text-ink-dim mt-1">Clones the repo, installs dependencies, runs the existing tests, rewrites the endpoint to use <code class="font-mono">SELECT COALESCE(SUM(amount), 0)</code>, adds a regression test. <code class="font-mono">pytest -k total</code> passes.</p>
+            </li>
+
+            <li class="relative pl-9 pb-6">
+              <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full bg-surface-hi border border-outline-strong flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px] text-ink-dim">visibility</span>
+              </span>
+              <h4 class="text-[13.5px] font-medium">Reports scope honestly</h4>
+              <p class="text-[13px] text-ink-dim mt-1">Spots an unrelated, pre-existing <code class="font-mono">ZeroDivisionError</code> nearby &mdash; and leaves it untouched, since it wasn't what Qodo flagged.</p>
+            </li>
+
+            <li class="relative pl-9 pb-6">
+              <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full bg-bad-dim border border-bad flex items-center justify-center animate-[pulse-ring_2s_infinite]">
+                <span class="material-symbols-outlined text-[16px] text-bad">error</span>
+              </span>
+              <h4 class="text-[13.5px] font-medium text-bad">Hits a real permission wall</h4>
+              <p class="text-[13px] text-ink-dim mt-1">First push fails: <code class="font-mono">403 Resource not accessible by personal access token</code>. Reports the exact error and stops &mdash; doesn't invent a workaround.</p>
+            </li>
+
+            <li class="relative pl-9">
+              <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full bg-amber-dim border border-amber flex items-center justify-center">
+                <span class="material-symbols-outlined text-[16px] text-amber">how_to_reg</span>
+              </span>
+              <h4 class="text-[13.5px] font-medium text-amber">Human approves &mdash; agent opens the PR</h4>
+              <p class="text-[13px] text-ink-dim mt-1">Token scope corrected, human says yes. Agent opens <a class="text-good underline" href="https://github.com/itjayesh/fix-radar-demo-target/pull/2" target="_blank" rel="noopener">PR&nbsp;#2</a> with the fix, the test, and a description linking back to the finding.</p>
+            </li>
+          </ol>
+        </section>
+
+        <section id="diff" class="border border-outline rounded-xl overflow-hidden bg-[#0A0C0A] scroll-mt-20">
+          <div class="bg-surface-raised border-b border-outline px-4 py-2.5 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[15px] text-ink-faint">description</span>
+            <span class="font-mono text-[12px] text-ink-dim">app.py &middot; PR #2</span>
+          </div>
+          <div class="p-4 font-mono text-[12.5px] overflow-x-auto">
+            <div class="flex">
+              <div class="text-ink-faint select-none pr-4 border-r border-outline text-right min-w-[2.25rem] leading-[1.7]">
+                <div>60</div><div>61</div><div>62</div><div>&nbsp;</div><div>&nbsp;</div>
+                <div>66</div><div>67</div><div>68</div><div>69</div><div>70</div>
+              </div>
+              <div class="pl-4 whitespace-pre leading-[1.7]">
+                <div class="text-ink-faint">    return jsonify({"average": average_amount(amounts)})</div>
+                <div class="text-ink-faint">&nbsp;</div>
+                <div class="text-ink-faint">&nbsp;</div>
+                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>@app.route("/expenses/total")</div>
+                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>def total_endpoint():</div>
+                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    conn = get_db()</div>
+                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    row = conn.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses").fetchone()</div>
+                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    conn.close()</div>
+                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    return jsonify({"total": row["total"]})</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="lg:col-span-5 flex flex-col gap-6">
+        <section class="glass border border-outline rounded-xl p-5">
+          <h3 class="text-[14px] font-semibold border-b border-outline pb-3 mb-3.5">Built with</h3>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="px-2.5 py-1 bg-surface-hi rounded border border-outline font-mono text-[11.5px] text-ink-dim">TrueForge</span>
+            <span class="px-2.5 py-1 bg-surface-hi rounded border border-outline font-mono text-[11.5px] text-ink-dim">Qodo</span>
+            <span class="px-2.5 py-1 bg-surface-hi rounded border border-outline font-mono text-[11.5px] text-ink-dim">GitHub MCP</span>
+            <span class="px-2.5 py-1 bg-surface-hi rounded border border-outline font-mono text-[11.5px] text-ink-dim">Daytona sandbox</span>
+            <span class="px-2.5 py-1 bg-surface-hi rounded border border-outline font-mono text-[11.5px] text-ink-dim">Flask + pytest</span>
+          </div>
+          <h4 class="text-[12.5px] text-ink-dim mb-2">Evidence</h4>
+          <ul class="space-y-2 text-[13px]">
+            <li><a class="flex items-center gap-2 text-good hover:underline" href="https://github.com/itjayesh/fix-radar-demo-target/pull/1" target="_blank" rel="noopener"><span class="material-symbols-outlined text-[15px]">link</span> Qodo finding &mdash; PR #1</a></li>
+            <li><a class="flex items-center gap-2 text-good hover:underline" href="https://github.com/itjayesh/fix-radar-demo-target/pull/2" target="_blank" rel="noopener"><span class="material-symbols-outlined text-[15px]">link</span> The fix &mdash; PR #2</a></li>
+            <li><a class="flex items-center gap-2 text-good hover:underline" href="https://github.com/itjayesh/fix-radar/blob/master/skills/qodo-fix/SKILL.md" target="_blank" rel="noopener"><span class="material-symbols-outlined text-[15px]">link</span> Agent skill</a></li>
+            <li><a class="flex items-center gap-2 text-good hover:underline" href="https://github.com/itjayesh/fix-radar" target="_blank" rel="noopener"><span class="material-symbols-outlined text-[15px]">link</span> Project repo</a></li>
+          </ul>
+        </section>
+
+        <section id="log" class="glass border border-outline rounded-xl p-5 flex-1 scroll-mt-20">
+          <h3 class="text-[14px] font-semibold border-b border-outline pb-3 mb-3.5">Run log</h3>
+          <div class="relative pl-3">
+            <div class="absolute left-3 top-1 bottom-1 w-px bg-outline"></div>
+            <div class="space-y-3.5 text-[12px] font-mono">
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-good"></span><span class="text-ink">Qodo:</span> <span class="text-ink-dim">finding posted on PR #1</span></div>
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-good"></span><span class="text-ink">agent:</span> <span class="text-ink-dim">read PR + file via GitHub MCP</span></div>
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-good"></span><span class="text-ink">sandbox:</span> <span class="text-ink-dim">daytona instance up, deps installed</span></div>
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-good"></span><span class="text-ink">agent:</span> <span class="text-ink-dim">fix + regression test written</span></div>
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-good"></span><span class="text-ink">pytest:</span> <span class="text-ink-dim">-k total &mdash; passed</span></div>
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-bad"></span><span class="text-bad">github:</span> <span class="text-ink-dim">403, push rejected</span></div>
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-amber"></span><span class="text-amber">human:</span> <span class="text-ink-dim">token fixed, approved</span></div>
+              <div class="relative pl-5"><span class="absolute left-[-4px] top-1 w-2 h-2 rounded-full bg-good"></span><span class="text-ink">agent:</span> <span class="text-ink-dim">opened PR #2</span></div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
-  </div>
 
-  <div class="win">
-    <div class="win-bar"><div class="dots"><span></span><span></span><span></span></div><div class="win-title">workflow.flow</div></div>
-    <div class="win-body">
-      <div class="loop">
-        <div class="node"><span class="n">01</span><span class="t">Qodo review flags an issue</span></div>
-        <div class="arrow">&rarr;</div>
-        <div class="node"><span class="n">02</span><span class="t">Agent reads it via GitHub MCP</span></div>
-        <div class="arrow">&rarr;</div>
-        <div class="node"><span class="n">03</span><span class="t">Reproduces &amp; fixes in a Daytona sandbox</span></div>
-        <div class="arrow">&rarr;</div>
-        <div class="node hold"><span class="n">04</span><span class="t">Stops for human approval</span></div>
-        <div class="arrow">&rarr;</div>
-        <div class="node"><span class="n">05</span><span class="t">Opens the fix PR</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="win">
-    <div class="win-bar"><div class="dots"><span></span><span></span><span></span></div><div class="win-title">run.log</div></div>
-    <div class="win-body">
-      <ol class="trace">
-        <li>
-          <span class="idx">1</span>
-          <div>
-            <div class="step-t">Qodo flags <code class="mono">app.py</code> lines 66&ndash;69</div>
-            <div class="step-d">On <a href="https://github.com/itjayesh/fix-radar-demo-target/pull/1" target="_blank" rel="noopener">PR&nbsp;#1</a>, triggered by commenting <code>/agentic_review</code>. Finding: &ldquo;Total loads every expense&rdquo; &mdash; <code>total_endpoint()</code> pulls every row into Python and sums there instead of letting SQLite aggregate.</div>
-          </div>
-        </li>
-        <li>
-          <span class="idx">2</span>
-          <div>
-            <div class="step-t">Agent reads the finding and the file</div>
-            <div class="step-d">Via the GitHub MCP connector: <code>pull_request_read</code>, <code>get_file_contents</code>, <code>list_commits</code> &mdash; confirming the defect itself rather than trusting the one-line description.</div>
-          </div>
-        </li>
-        <li>
-          <span class="idx">3</span>
-          <div>
-            <div class="step-t">Reproduces it in an isolated sandbox</div>
-            <div class="step-d">Clones the repo into Daytona, installs dependencies, and runs the existing tests before touching anything.</div>
-          </div>
-        </li>
-        <li class="milestone">
-          <span class="idx">4</span>
-          <div>
-            <div class="step-t">Writes the fix and a regression test</div>
-            <div class="step-d">Replaces the Python-side <code>sum()</code> with <code>SELECT COALESCE(SUM(amount), 0) FROM expenses</code>. Adds a test asserting the endpoint calls the SQL aggregate. <code>pytest -q test_app.py -k total</code> passes.</div>
-          </div>
-        </li>
-        <li>
-          <span class="idx">5</span>
-          <div>
-            <div class="step-t">Reports scope honestly</div>
-            <div class="step-d">Notices a pre-existing, unrelated <code>ZeroDivisionError</code> in <code>average_amount([])</code> &mdash; and leaves it alone, since it wasn't what Qodo flagged.</div>
-          </div>
-        </li>
-        <li class="blocker">
-          <span class="idx">6</span>
-          <div>
-            <div class="step-t">Stops at a real permission wall</div>
-            <div class="step-d">First push attempt fails: <code>403 Resource not accessible by personal access token</code>. The agent reports the exact error and waits &mdash; it does not invent a workaround.</div>
-          </div>
-        </li>
-        <li class="milestone">
-          <span class="idx">7</span>
-          <div>
-            <div class="step-t">Human approves, agent opens the PR</div>
-            <div class="step-d">Token scope corrected, human says &ldquo;yes.&rdquo; Agent opens <a href="https://github.com/itjayesh/fix-radar-demo-target/pull/2" target="_blank" rel="noopener">PR&nbsp;#2</a> with the fix, the test, and a description linking back to the original finding.</div>
-          </div>
-        </li>
-      </ol>
-    </div>
-  </div>
-
-  <div class="win">
-    <div class="win-bar"><div class="dots"><span></span><span></span><span></span></div><div class="win-title">app.py &middot; PR #2</div></div>
-    <div class="win-body">
-      <div class="diff">
-        <pre><span class="line ctx">    return jsonify({"average": average_amount(amounts)})</span>
-<span class="line ctx"></span>
-<span class="line ctx"></span>
-<span class="line add">+@app.route("/expenses/total")</span>
-<span class="line add">+def total_endpoint():</span>
-<span class="line add">+    conn = get_db()</span>
-<span class="line add">+    row = conn.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses").fetchone()</span>
-<span class="line add">+    conn.close()</span>
-<span class="line add">+    return jsonify({"total": row["total"]})</span></pre>
-      </div>
-    </div>
-  </div>
-
-  <div class="win">
-    <div class="win-bar"><div class="dots"><span></span><span></span><span></span></div><div class="win-title">stack.toml</div></div>
-    <div class="win-body">
-      <div class="stack">
-        <span class="chip">TrueForge</span>
-        <span class="chip">Qodo</span>
-        <span class="chip">GitHub MCP</span>
-        <span class="chip">Daytona sandbox</span>
-        <span class="chip">skill: qodo-fix</span>
-        <span class="chip">Flask + pytest</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="win">
-    <div class="win-bar"><div class="dots"><span></span><span></span><span></span></div><div class="win-title">links.txt</div></div>
-    <div class="win-body">
-      <div class="links">
-        <div class="linkrow"><span class="k">finding</span><a href="https://github.com/itjayesh/fix-radar-demo-target/pull/1" target="_blank" rel="noopener">github.com/itjayesh/fix-radar-demo-target/pull/1</a></div>
-        <div class="linkrow"><span class="k">fix pr</span><a href="https://github.com/itjayesh/fix-radar-demo-target/pull/2" target="_blank" rel="noopener">github.com/itjayesh/fix-radar-demo-target/pull/2</a></div>
-        <div class="linkrow"><span class="k">skill</span><a href="https://github.com/itjayesh/fix-radar/blob/master/skills/qodo-fix/SKILL.md" target="_blank" rel="noopener">github.com/itjayesh/fix-radar/skills/qodo-fix</a></div>
-        <div class="linkrow"><span class="k">repo</span><a href="https://github.com/itjayesh/fix-radar" target="_blank" rel="noopener">github.com/itjayesh/fix-radar</a></div>
-      </div>
-    </div>
-  </div>
-
-  <footer>Agent Harness Hackathon &middot; Aug 24&ndash;30, 2026 &middot; TrueForge + Qodo</footer>
-
+    <footer class="mt-10 pt-5 border-t border-outline text-[12px] text-ink-faint font-mono flex justify-between flex-wrap gap-2">
+      <span>Agent Harness Hackathon &middot; Aug 24&ndash;30, 2026</span>
+      <a class="hover:text-ink-dim transition-colors" href="https://github.com/itjayesh/fix-radar" target="_blank" rel="noopener">TrueForge + Qodo</a>
+    </footer>
+  </main>
 </div>
 </body>
 </html>
