@@ -73,3 +73,29 @@ Steps that need your own accounts/keys (can't be scripted):
 4. Agent asks for approval before opening the fix PR — approve on camera.
 5. Show the resulting PR: description, diff, before/after test output,
    link back to the Qodo finding.
+
+## What actually happened (this run)
+
+- Opened [PR #1](https://github.com/itjayesh/fix-radar-demo-target/pull/1)
+  on `fix-radar-demo-target` adding a new `/expenses/total` endpoint.
+- Commented `/agentic_review` — Qodo flagged it: the endpoint pulled every
+  expense row into Python and summed them there instead of aggregating in
+  SQL (medium-severity performance finding, `app.py` lines 66-69).
+- Handed that finding to the saved TrueForge agent (GitHub MCP connector +
+  Daytona sandbox + the `qodo-fix` skill). It read the PR and the file via
+  GitHub, cloned the repo and installed dependencies in the sandbox,
+  reproduced current behavior, rewrote the endpoint to use
+  `SELECT COALESCE(SUM(amount), 0) FROM expenses`, added a regression test,
+  ran `pytest -q test_app.py -k total` (passed), and correctly reported —
+  without touching it — the pre-existing unrelated `ZeroDivisionError` bug
+  in `average_amount([])`.
+- **Stopped and asked for human approval** before pushing anything or
+  opening a PR — the approval gate the `qodo-fix` skill's guardrails
+  require.
+- On approval, opened
+  [PR #2](https://github.com/itjayesh/fix-radar-demo-target/pull/2) with
+  the fix, the test, and a description linking back to the Qodo finding.
+
+This is the whole loop end to end: Qodo finds a real issue → the agent
+investigates and fixes it in a sandbox with its own tests → a human signs
+off → the PR ships with the paper trail attached.
