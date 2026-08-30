@@ -194,23 +194,16 @@
             <span class="material-symbols-outlined text-[15px] text-ink-faint">description</span>
             <span class="font-mono text-[12px] text-ink-dim">app.py &middot; PR #2</span>
           </div>
-          <div class="p-4 font-mono text-[12.5px] overflow-x-auto">
-            <div class="flex">
-              <div class="text-ink-faint select-none pr-4 border-r border-outline text-right min-w-[2.25rem] leading-[1.7]">
-                <div>60</div><div>61</div><div>62</div><div>&nbsp;</div><div>&nbsp;</div>
-                <div>66</div><div>67</div><div>68</div><div>69</div><div>70</div>
-              </div>
-              <div class="pl-4 whitespace-pre leading-[1.7]">
-                <div class="text-ink-faint">    return jsonify({"average": average_amount(amounts)})</div>
-                <div class="text-ink-faint">&nbsp;</div>
-                <div class="text-ink-faint">&nbsp;</div>
-                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>@app.route("/expenses/total")</div>
-                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>def total_endpoint():</div>
-                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    conn = get_db()</div>
-                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    row = conn.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses").fetchone()</div>
-                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    conn.close()</div>
-                <div class="bg-good/10 text-good"><span class="select-none mr-2">+</span>    return jsonify({"total": row["total"]})</div>
-              </div>
+          <div class="p-4 font-mono text-[12.5px] overflow-x-auto leading-[1.7]">
+            <div class="text-ink-faint mb-1">@@ -60,3 +66,9 @@ def average_endpoint():</div>
+            <div class="whitespace-pre">
+              <div class="text-ink-faint pl-4">    return jsonify({"average": average_amount(amounts)})</div>
+              <div class="bg-good/10 text-good pl-1"><span class="select-none mr-2">+</span>@app.route("/expenses/total")</div>
+              <div class="bg-good/10 text-good pl-1"><span class="select-none mr-2">+</span>def total_endpoint():</div>
+              <div class="bg-good/10 text-good pl-1"><span class="select-none mr-2">+</span>    conn = get_db()</div>
+              <div class="bg-good/10 text-good pl-1"><span class="select-none mr-2">+</span>    row = conn.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM expenses").fetchone()</div>
+              <div class="bg-good/10 text-good pl-1"><span class="select-none mr-2">+</span>    conn.close()</div>
+              <div class="bg-good/10 text-good pl-1"><span class="select-none mr-2">+</span>    return jsonify({"total": row["total"]})</div>
             </div>
           </div>
         </section>
